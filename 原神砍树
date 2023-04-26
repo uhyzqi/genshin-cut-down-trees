@@ -10,110 +10,110 @@ int x_pos_2 = 30 * 65535 / x_len, y_pos_2 = 1030 * 65535 / y_len;
 
 BOOL IsUserAdmin() //管理员运行（chatgpt写的，我不懂）
 {
-    BOOL bResult;
-    SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
-    PSID pAdministratorsGroup;
-    bResult = AllocateAndInitializeSid(
-        &NtAuthority,
-        2,
-        SECURITY_BUILTIN_DOMAIN_RID,
-        DOMAIN_ALIAS_RID_ADMINS,
-        0, 0, 0, 0, 0, 0,
-        &pAdministratorsGroup);
-    
-    if (bResult)
-    {
-        if (!CheckTokenMembership(NULL, pAdministratorsGroup, &bResult))
-        {
-        bResult = FALSE;
-        }
-        FreeSid(pAdministratorsGroup);
-    }
-    return bResult;
+BOOL bResult;
+SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
+PSID pAdministratorsGroup;
+bResult = AllocateAndInitializeSid(
+&NtAuthority,
+2,
+SECURITY_BUILTIN_DOMAIN_RID,
+DOMAIN_ALIAS_RID_ADMINS,
+0, 0, 0, 0, 0, 0,
+&pAdministratorsGroup);
+
+if (bResult)
+{
+if (!CheckTokenMembership(NULL, pAdministratorsGroup, &bResult))
+{
+bResult = FALSE;
+}
+FreeSid(pAdministratorsGroup);
+}
+return bResult;
 }
 
 int main()
 {
-    int a=350 ;//默认砍树次数
-    int open=30000 ;//默认进游戏时间
-    int end=20000;//默认退游戏时间
-    int in = 30;
-    int off = 20;
-    
-    if (IsUserAdmin())//管理员
-    {   
-        printf("输入syq使用默认参数(单种刷满，大约需要6小时）\n输入任意其他字符进入自定义选项\n");
-        char morf[4]={0};
-        scanf_s("%s", morf,4);
-        if  (strcmp(morf, "syq") != 0)
-        { 
-        printf("每日单种树木上限两千，请输入循环次数：\n");
-        int num;//定义输入的变量
-        scanf_s("%d", &num);//获取输入循环执行次数
-        a = num + 1;
-        printf("请输入进游戏时间(单位秒）\n");
-        scanf_s("%d", &in);
-        open = in * 1000;
-        printf("请输入退游戏时间(单位秒）\n");
-        scanf_s("%d", &off);
-        end = off * 1000;
-        }
-        printf("请确保你在原神界面并携带王树端佑站在伐木点，全屏且分辨率为1920*1080\n伐木点具体位置可参考：https://www.miyoushe.com/ys/article/35146341\n");
-        printf("注意：会在%d秒后开始砍树（砍完树会退出游戏）\n",(in+off));
-        int i = 1;
-        while (i < a)
-        {
-            printf("第%d次循环\n", i); 
-            i++;                                                                                                                                                                                                                                                                       
-            Sleep(end);//退游戏时间
-            mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE, x_pos, y_pos, 0, 0);
-            mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-            Sleep(open);//进游戏时间
-            keybd_event(90, 0, 0, 0);
-            Sleep(50);
-            keybd_event(90, 0, 2, 0);
-            Sleep(3000);
-            keybd_event(VK_ESCAPE, 0, 0, 0);
-            Sleep(50);
-            keybd_event(VK_ESCAPE, 0, 2, 0);
-            Sleep(1000);
-            mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE, x_pos_2, y_pos_2, 0, 0);
-            mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-            Sleep(300);
-            mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE, x_pos, y_pos, 0, 0);
-            mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-       }
-        Sleep(10000);
-        keybd_event(VK_ESCAPE, 0, 0, 0);
-        Sleep(50);
-        keybd_event(VK_ESCAPE, 0, 2, 0);
-        Sleep(1000);
-        mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE, x_pos_2, y_pos_2, 0, 0);
-        mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-        Sleep(500);
-        mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE, x_pos, y_pos, 0, 0);
-        mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-        printf("\n砍树完成（按任意键会退出窗口）\n");
-        system("pause");  // 强制暂停      
-    }
-    else
-            {
-                TCHAR szPath[MAX_PATH];
-                if (GetModuleFileName(NULL, szPath, MAX_PATH))
-                {
-                    //申请管理员权限
-                    SHELLEXECUTEINFO sei = { sizeof(sei) };
-                    sei.lpVerb = TEXT("runas"); //以管理员身份运行
-                    sei.lpFile = szPath;
-                    sei.nShow = SW_SHOW;
+int a=350 ;//默认砍树次数
+int open=30000 ;//默认进游戏时间
+int end=20000;//默认退游戏时间
+int in = 30;
+int off = 20;
 
-                    if (ShellExecuteEx(&sei))
-                    {
-                        return 0; //申请成功后结束程序
-                    }
-                    printf("没有管理员权限，请在进入程序时弹出的申请管理员权限窗口点击确定\n单击回车键退出窗口");
-                    getchar();//暂停程序
-                }
-            }
-    return 0;
-        }
+if (IsUserAdmin())//管理员
+{   
+printf("输入syq使用默认参数(单种刷满，大约需要6小时）\n输入任意其他字符进入自定义选项\n");
+char morf[4]={0};
+scanf_s("%s", morf,4);
+if  (strcmp(morf, "syq") != 0)
+{ 
+printf("每日单种树木上限两千，请输入循环次数：\n");
+int num;//定义输入的变量
+scanf_s("%d", &num);//获取输入循环执行次数
+a = num + 1;
+printf("请输入进游戏时间(单位秒）\n");
+scanf_s("%d", &in);
+open = in * 1000;
+printf("请输入退游戏时间(单位秒）\n");
+scanf_s("%d", &off);
+end = off * 1000;
+}
+printf("请确保你在原神界面并携带王树端佑站在伐木点，全屏且分辨率为1920*1080\n伐木点具体位置可参考：https://www.miyoushe.com/ys/article/35146341\n");
+printf("注意：会在%d秒后开始砍树（砍完树会退出游戏）\n",(in+off));
+int i = 1;
+while (i < a)
+{
+printf("第%d次循环\n", i); 
+i++;                                                                                                                                                                                                                                                                       
+Sleep(end);//退游戏时间
+mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE, x_pos, y_pos, 0, 0);
+mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+Sleep(open);//进游戏时间
+keybd_event(90, 0, 0, 0);
+Sleep(50);
+keybd_event(90, 0, 2, 0);
+Sleep(3000);
+keybd_event(VK_ESCAPE, 0, 0, 0);
+Sleep(50);
+keybd_event(VK_ESCAPE, 0, 2, 0);
+Sleep(1000);
+mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE, x_pos_2, y_pos_2, 0, 0);
+mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+Sleep(300);
+mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE, x_pos, y_pos, 0, 0);
+mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+}
+Sleep(10000);
+keybd_event(VK_ESCAPE, 0, 0, 0);
+Sleep(50);
+keybd_event(VK_ESCAPE, 0, 2, 0);
+Sleep(1000);
+mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE, x_pos_2, y_pos_2, 0, 0);
+mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+Sleep(500);
+mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE, x_pos, y_pos, 0, 0);
+mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+printf("\n砍树完成（按任意键会退出窗口）\n");
+system("pause");  // 强制暂停      
+}
+else
+{
+TCHAR szPath[MAX_PATH];
+if (GetModuleFileName(NULL, szPath, MAX_PATH))
+{
+//申请管理员权限
+SHELLEXECUTEINFO sei = { sizeof(sei) };
+sei.lpVerb = TEXT("runas"); //以管理员身份运行
+sei.lpFile = szPath;
+sei.nShow = SW_SHOW;
+
+if (ShellExecuteEx(&sei))
+{
+return 0; //申请成功后结束程序
+}
+printf("没有管理员权限，请在进入程序时弹出的申请管理员权限窗口点击确定\n单击回车键退出窗口");
+getchar();//暂停程序
+}
+}
+return 0;
+}
